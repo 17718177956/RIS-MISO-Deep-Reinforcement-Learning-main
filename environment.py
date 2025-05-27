@@ -7,10 +7,12 @@ class RIS_MISO(object):
                  num_antennas,
                  num_RIS_elements,
                  num_users,
+                 seed: int = 0,
                  channel_est_error=False,
                  AWGN_var=1e-2,
                  channel_noise_var=1e-2):
-
+        
+        np.random.seed(seed)
         self.M = num_antennas
         self.L = num_RIS_elements
         self.K = num_users

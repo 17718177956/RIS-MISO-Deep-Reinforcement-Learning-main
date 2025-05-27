@@ -73,7 +73,7 @@ if __name__ == "__main__":
     if args.save_model and not os.path.exists("./Models"):
         os.makedirs("./Models")
 
-    env = environment.RIS_MISO(args.num_antennas, args.num_RIS_elements, args.num_users, AWGN_var=args.awgn_var)
+    env = environment.RIS_MISO(args.num_antennas, args.num_RIS_elements, args.num_users, AWGN_var=args.awgn_var, seed=42)
 
     # Set seeds
     torch.manual_seed(args.seed)
