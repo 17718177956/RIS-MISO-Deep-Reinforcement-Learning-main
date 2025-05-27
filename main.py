@@ -182,6 +182,9 @@ for eps in range(int(args.num_eps)):
            print(f"[t={t}] Φ|·|均值={phi_mag.mean():.3f},  最小={phi_mag.min():.3f}, 最大={phi_mag.max():.3f}")
            # ---- 计算并打印瞬时总速率（单位：bps/Hz）----
         sum_rate = float(np.sum(raw_reward))     # reward 已经是每个用户速率之和
+        x_vals.append(global_step)
+        sum_rate_vals.append(sum_rate)
+        global_step += 1
         if t % 100 == 0:                     # 每 100 步打印一次，自己调频率
          print(f"[t={t}]  Sum-rate = {sum_rate:.3f} bps/Hz")
             # ----------------------------------------------
@@ -224,3 +227,13 @@ for eps in range(int(args.num_eps)):
             # Save rewards to file for this episode
             np.save(f"./Learning Curves/{args.experiment_type}/{file_name}_episode_{eps+1}", instant_rewards)
             break  # break out of the time-step loop to start a new episode
+plt.figure(figsize=(6, 4))
+plt.plot(x_vals, sum_rate_vals, linewidth=1)
+plt.xlabel("Total steps")
+plt.ylabel("Sum-rate (bps/Hz)")
+plt.title("Sum-rate learning curve")
+plt.grid(True)
+plt.tight_layout()
+
+plt.savefig("sum_rate_vs_steps.png", dpi=300)   # 文件保存在当前目录
+plt.close()                                    # 释放内存
