@@ -102,10 +102,6 @@ class DDPG(object):
                  policy_noise=0.2, noise_clip=0.5, policy_freq=2):
         self.policy_freq = policy_freq  
         self.device = device
-        # --- ① 以子文件夹区分两条 Critic 的日志 --------------------
-        self.writer      = SummaryWriter("runs/debug")           # 全局
-        self.writer_c1   = SummaryWriter("runs/debug/critic1")   # Critic-1
-        self.writer_c2   = SummaryWriter("runs/debug/critic2")   # Critic-2
         self.total_it = 0  
         self.policy_noise = policy_noise
         self.noise_clip   = noise_clip
@@ -171,22 +167,6 @@ class DDPG(object):
         loss_c2.backward()
         grad_norm_c2 = torch.nn.utils.clip_grad_norm_(self.critic2.parameters(), 0.5).item()
         self.critic_optimizer2.step()
-
-        # ---------- ④ 写 TensorBoard：两条折线 + 可选直方图 ----------
-        if self.total_it % 100 == 0:                # 频率可调
-            self.writer_c1.add_scalar("loss",       loss_c1.item(),  self.total_it)
-            self.writer_c1.add_scalar("grad_norm",  grad_norm_c1,    self.total_it)
-            self.writer_c2.add_scalar("loss",       loss_c2.item(),  self.total_it)            
-            self.writer_c2.add_scalar("grad_norm",  grad_norm_c2,    self.total_it)
-
-            # （可选）梯度分布直方图——隔 1 K 步记录一次即可
-            if self.total_it % 1000 == 0:
-                for n,p in self.critic1.named_parameters():
-                    if p.grad is not None:
-                        self.writer_c1.add_histogram(f"grad/{n}", p.grad, self.total_it)
-                for n,p in self.critic2.named_parameters():
-                    if p.grad is not None:
-                        self.writer_c2.add_histogram(f"grad/{n}", p.grad, self.total_it)
 
         # 仅当达到延迟更新频率时更新 Actor 和目标网络:contentReference[oaicite:15]{index=15}
         if self.total_it % self.policy_freq == 0:

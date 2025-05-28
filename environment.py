@@ -7,10 +7,10 @@ class RIS_MISO(object):
                  num_antennas,
                  num_RIS_elements,
                  num_users,
-                 seed: int = 0,
+                 seed,
                  AWGN_var=1e-2,
                  ):
-        
+
         np.random.seed(seed)
         self.M = num_antennas
         self.L = num_RIS_elements
@@ -186,6 +186,3 @@ class RIS_MISO(object):
         done = opt_reward == reward
 
         return self.state, reward, done, None
-
-    def close(self):
-        pass
