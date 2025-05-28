@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", default=0, type=int, help='Seed number for PyTorch and NumPy (default: 0)')
     parser.add_argument("--gpu", default="0", type=int, help='GPU ordinal for multi-GPU computers (default: 0)')
     parser.add_argument("--start_time_steps", default=0, type=int, metavar='N', help='Number of exploration time steps sampling random actions (default: 0)')
-    parser.add_argument("--buffer_size", default=1000000, type=int, help='Size of the experience replay buffer (default: 100000)')
+    parser.add_argument("--buffer_size", default=100000, type=int, help='Size of the experience replay buffer (default: 100000)')
     parser.add_argument("--batch_size", default=64, metavar='N', help='Batch size (default: 16)')
     parser.add_argument("--save_model", action="store_true", help='Save model and optimizer parameters')
     parser.add_argument("--load_model", default="", help='Model load file name; if empty, does not load')
