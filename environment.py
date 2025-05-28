@@ -8,9 +8,8 @@ class RIS_MISO(object):
                  num_RIS_elements,
                  num_users,
                  seed: int = 0,
-                 channel_est_error=False,
                  AWGN_var=1e-2,
-                 channel_noise_var=1e-2):
+                 ):
         
         np.random.seed(seed)
         self.M = num_antennas
@@ -23,7 +22,6 @@ class RIS_MISO(object):
         self.H_rn = np.random.normal(0, np.sqrt(0.5), (self.L, self.K)) + 1j * np.random.normal(0, np.sqrt(0.5), (self.L, self.K))
         self.H_rf = np.random.normal(0, np.sqrt(0.5), (self.L, self.K)) + 1j * np.random.normal(0, np.sqrt(0.5), (self.L, self.K))
 
-        self.channel_est_error = channel_est_error
         self.awgn_var = AWGN_var
         assert self.M == self.K
         power_size = 2 * self.K  # (K对用户的传输功率) + (K对用户的反射功率)
@@ -32,11 +30,6 @@ class RIS_MISO(object):
         self.action_dim = 2 * self.M * self.K + 2 * self.K + 2 * self.L
         self.state_dim = power_size + channel_size + self.action_dim
 
-        #self.H_1 = None
-        #self.H_rn = None  # RIS到近用户的信道
-        #self.H_rf = None  # RIS到远用户的信道
-        #self.H_bn = None  # BS到近用户的信道
-        #self.H_bf = None  # BS到远用户的信道
         self.G = np.eye(self.M, dtype=complex)
         self.Phi = np.eye(self.L, dtype=complex)
 
@@ -47,13 +40,6 @@ class RIS_MISO(object):
 
     def reset(self):
         self.episode_t = 0
-
-        # 生成信道：H1（BS->RIS），H_bn/H_bf（BS->用户），H_rn/H_rf（RIS->用户）
-        #self.H_1 = np.random.normal(0, np.sqrt(0.5), (self.L, self.M)) + 1j * np.random.normal(0, np.sqrt(0.5), (self.L, self.M))
-        #self.H_bn = np.random.normal(0, np.sqrt(0.5), (self.M, self.K)) + 1j * np.random.normal(0, np.sqrt(0.5), (self.M, self.K))
-        #self.H_bf = np.random.normal(0, np.sqrt(0.2), (self.M, self.K)) + 1j * np.random.normal(0, np.sqrt(0.2), (self.M, self.K))
-        #self.H_rn = np.random.normal(0, np.sqrt(0.5), (self.L, self.K)) + 1j * np.random.normal(0, np.sqrt(0.5), (self.L, self.K))
-        #self.H_rf = np.random.normal(0, np.sqrt(0.5), (self.L, self.K)) + 1j * np.random.normal(0, np.sqrt(0.5), (self.L, self.K))
 
         init_action_G = np.hstack((np.real(self.G.reshape(1, -1)), np.imag(self.G.reshape(1, -1))))
         init_action_Phi = np.hstack(
@@ -121,8 +107,8 @@ class RIS_MISO(object):
          # 防止对数计算无效
          eps = 1e-10  # 很小的数，防止除零或对零取对数
          if x_n > 0 and x_f > 0:
-            rho_n = x_n / (interference_n + (self.K - 1) * self.awgn_var)
-            rho_f = x_f / (interference_f + (self.K - 1) * self.awgn_var)
+            rho_n = x_n / (interference_n + self.awgn_var)
+            rho_f = x_f / (interference_f + self.awgn_var)
             reward += np.log2(1 + max(rho_n, eps)) + np.log2(1 + max(rho_f, eps))
          else:
             reward += 0  # 如果x_n或者x_f无效，设置默认奖励
