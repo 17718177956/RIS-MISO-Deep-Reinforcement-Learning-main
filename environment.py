@@ -1,6 +1,6 @@
 import numpy as np
 
-
+eps = 1e-10  # 很小的数，防止除零或对零取对数
 
 class RIS_MISO(object):
     def __init__(self,
@@ -97,22 +97,33 @@ class RIS_MISO(object):
          x_f = self.a_f[k] * (np.abs(signal_f) ** 2)
          # 计算来自其他信道的干扰功率：
          G_removed = np.delete(self.G, k, axis=1)         # M×(K-1)
-         interference_n = np.sum(np.abs(c_n_k @ G_removed) ** 2)
-         interference_f = np.sum(np.abs(c_f_k @ G_removed) ** 2) + self.a_n[k] * (np.abs(signal_f) ** 2)
-         # 计算近用户和远用户的 SINR：
-         rho_n = x_n / (interference_n + (self.K - 1) * self.awgn_var)
-         rho_f = x_f / (interference_f + (self.K - 1) * self.awgn_var)
+        # --- 所有其他束的贡献 ---
+        interference_n = 0.0
+        interference_f = self.a_n[k] * np.abs(c_f_k @ g_k)**2   # 同束近端功率
 
-
-         # 防止对数计算无效
-         eps = 1e-10  # 很小的数，防止除零或对零取对数
-         if x_n > 0 and x_f > 0:
+        if x_n > 0 and x_f > 0:
+            for j in range(self.K):
+                if j == k:
+                    continue
+                g_j = self.G[:, j].reshape(-1, 1)
+                # 近端视角下，其他束的近端+远端功率都是干扰
+                interference_n += (
+                    self.a_n[j] * np.abs(c_n_k @ g_j)**2 +
+                    self.a_f[j] * np.abs(c_n_k @ g_j)**2
+                )
+                interference_f += (
+                    self.a_n[j] * np.abs(c_f_k @ g_j)**2 +
+                    self.a_f[j] * np.abs(c_f_k @ g_j)**2
+                )
             rho_n = x_n / (interference_n + self.awgn_var)
             rho_f = x_f / (interference_f + self.awgn_var)
             reward += np.log2(1 + max(rho_n, eps)) + np.log2(1 + max(rho_f, eps))
-         else:
-            reward += 0  # 如果x_n或者x_f无效，设置默认奖励
-         opt_reward += np.log2(1 + max(x_n, eps) / ((self.K - 1) * self.awgn_var)) + np.log2(1 + max(x_f, eps) / ((self.K - 1) * self.awgn_var))
+
+        else:
+             reward += 0  # 如果x_n或者x_f无效，设置默认奖励
+
+         
+        opt_reward = np.sum(np.log2(1 + signal_n.flatten() / self.awgn_var) +np.log2(1 + signal_f.flatten() / self.awgn_var))
 
 
         return reward, opt_reward
