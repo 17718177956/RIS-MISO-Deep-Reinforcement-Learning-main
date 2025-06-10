@@ -98,8 +98,8 @@ class Critic(nn.Module):
 class DDPG(object):
     def __init__(self, state_dim, action_dim, M, N, K, power_t, max_action,
                  actor_lr, critic_lr, actor_decay, critic_decay, device,
-                 discount=0.90, tau=0.001,
-                 policy_noise=0.2, noise_clip=0.5, policy_freq=2):
+                 discount, tau,
+                 policy_noise, noise_clip, policy_freq):
         self.policy_freq = policy_freq  
         self.device = device
         self.total_it = 0  

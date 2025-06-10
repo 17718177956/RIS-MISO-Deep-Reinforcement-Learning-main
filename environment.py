@@ -166,7 +166,7 @@ class RIS_MISO(object):
 
 
         # 直接计算 power_r，而不再使用 H_2_tilde
-        power_r = np.linalg.norm(self.H_rf + self.H_rn, axis=0).reshape(1, -1) ** 2
+        power_r = np.linalg.norm(self.H_rf + self.H_rn, axis=0).reshape(1, -1)
 
 
         H1_real = np.real(self.H_1).reshape(1, -1); H1_imag = np.imag(self.H_1).reshape(1, -1)
